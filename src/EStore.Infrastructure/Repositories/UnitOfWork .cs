@@ -1,5 +1,4 @@
-﻿using EBookStore.Infrastructure.Repositories;
-using EStore.Application.Repositories;
+﻿using EStore.Application.Repositories;
 using EStore.Infrastructure.Data;
 
 namespace EStore.Infrastructure.Repositories;
@@ -10,16 +9,19 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
-        AuthorRepository = new AuthorRepository(_dbContext);
-        BookRepository = new BookRepository(_dbContext);
-        PublisherRepository = new PublisherRepository(_dbContext);
-        UserRepository = new UserRepository(_dbContext);
+        CategoryRepository = new CategoryRepository(_dbContext);
+        OrderRepository = new OrderRepository(_dbContext);
+        ProductRepository = new ProductRepository(_dbContext);
+        OrderDetailRepository = new OrderDetailRepository(_dbContext);
     }
 
-    public IAuthorRepository AuthorRepository { get; }
-    public IBookRepository BookRepository { get; }
-    public IPublisherRepository PublisherRepository { get; }
-    public IUserRepository UserRepository { get; }
+    public ICategoryRepository CategoryRepository { get; private set; }
+
+    public IOrderRepository OrderRepository { get; private set; }
+
+    public IProductRepository ProductRepository { get; private set; }
+
+    public IOrderDetailRepository OrderDetailRepository { get; private set; }
 
     public async Task CommitAsync() => await _dbContext.SaveChangesAsync();
     public IQueryable<T> Entities<T>() where T : class => _dbContext.Set<T>();

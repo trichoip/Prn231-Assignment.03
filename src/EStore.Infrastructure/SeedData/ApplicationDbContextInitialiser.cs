@@ -1,9 +1,12 @@
 ﻿using AutoBogus;
 using EStore.Domain.Entities;
 using EStore.Infrastructure.Data;
+using EStore.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MySql.EntityFrameworkCore.Infrastructure.Internal;
+using System.Security.Claims;
 
 namespace EStore.Infrastructure.SeedData;
 
@@ -11,13 +14,19 @@ public class ApplicationDbContextInitialiser
 {
     private readonly ILogger<ApplicationDbContextInitialiser> _logger;
     private readonly ApplicationDbContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole<int>> _roleManager;
 
     public ApplicationDbContextInitialiser(
         ILogger<ApplicationDbContextInitialiser> logger,
+        UserManager<ApplicationUser> userManager,
+        RoleManager<IdentityRole<int>> roleManager,
         ApplicationDbContext context)
     {
         _logger = logger;
         _context = context;
+        _userManager = userManager;
+        _roleManager = roleManager;
     }
 
     public async Task InitialiseAsync()
@@ -54,19 +63,62 @@ public class ApplicationDbContextInitialiser
     public async Task TrySeedAsync()
     {
 
-        var entities = AutoFaker.Generate<Book>(3, configure =>
+        var administratorRole = new IdentityRole<int>() { Name = "Administrator" };
+        if (_roleManager.Roles.All(r => r.Name != administratorRole.Name))
         {
-            configure.WithRepeatCount(2);
-            configure.WithRecursiveDepth(1);
+            await _roleManager.CreateAsync(administratorRole);
+        }
 
-            configure.WithSkip<Author>(a => a.AuthorId);
-            configure.WithSkip<User>(a => a.UserId);
-            configure.WithSkip<Book>(a => a.BookId);
-            configure.WithSkip<Publisher>(a => a.PubId);
-            configure.WithSkip<Role>(a => a.RoleId);
-        });
+        var administrator = new ApplicationUser { UserName = "developermode549@gmail.com", Email = "developermode549@gmail.com", EmailConfirmed = true, PhoneNumber = "0123456789" };
+        if (_userManager.Users.All(u => u.UserName != administrator.UserName))
+        {
+            await _userManager.CreateAsync(administrator, "aA123456!");
+            if (!string.IsNullOrWhiteSpace(administratorRole.Name))
+            {
+                await _userManager.AddToRolesAsync(administrator, new[] { administratorRole.Name });
+            }
+            await _userManager.AddClaimAsync(administrator, new Claim(ClaimTypes.Country, "HCM"));
+        }
 
-        await _context.AddRangeAsync(entities);
+        var categories = new AutoFaker<Category>().Configure(configure =>
+        {
+            configure.WithTreeDepth(1);
+            configure.WithRepeatCount(0);
+        })
+         .Ignore(a => a.CategoryId)
+         .Generate(5);
+
+        var products = new AutoFaker<Product>().Configure(configure =>
+        {
+            configure.WithTreeDepth(1);
+            configure.WithRepeatCount(0);
+            configure.WithSkip<Product>(a => a.ProductId);
+            configure.WithSkip<Product>(a => a.CategoryId);
+        })
+        .RuleFor(c => c.Category, f => f.Random.CollectionItem(categories))
+        //.RuleFor(c => c.ProductId, f => f.IndexFaker + 1)
+        .Generate(20);
+
+        var orderDetails = new AutoFaker<OrderDetail>().Configure(configure =>
+        {
+            configure.WithTreeDepth(1);
+            configure.WithSkip<OrderDetail>(a => a.OrderId);
+            configure.WithSkip<OrderDetail>(a => a.ProductId);
+        })
+        .RuleFor(c => c.Product, f => f.Random.CollectionItem(products));
+
+        var orders = new AutoFaker<Order>().Configure(configure =>
+        {
+            configure.WithTreeDepth(1);
+            configure.WithSkip<Order>(a => a.OrderId);
+            configure.WithSkip<Order>(a => a.MemberId);
+        })
+        .RuleFor(c => c.MemberId, f => administrator.Id)
+        //.RuleFor(c => c.OrderDetails, f => orderDetails.Generate(5).DistinctBy(c => c.Product.ProductId).ToList())
+        .RuleFor(c => c.OrderDetails, f => orderDetails.Generate(5).DistinctBy(c => c.Product.UnitsInStock).ToList())
+        .Generate(5);
+
+        await _context.AddRangeAsync(orders);
         await _context.SaveChangesAsync();
     }
 }
