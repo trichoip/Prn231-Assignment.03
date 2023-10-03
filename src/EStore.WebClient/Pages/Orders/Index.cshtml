@@ -1,0 +1,93 @@
+﻿@page
+@model EStore.WebClient.Pages.Orders.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                OrderId
+            </th>
+            <th>
+                OrderDate
+            </th>
+            <th>
+                RequiredDate
+            </th>
+            <th>
+                ShippedDate
+            </th>
+            <th>
+                Freight
+            </th>
+            <th>
+                IsDeleted
+            </th>
+            <th>
+                Member
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="orderList">
+    </tbody>
+</table>
+
+<script>
+    getOrders();
+
+    function getOrders() {
+        fetch('https://localhost:7285/api/Orders')
+            .then(response => response.json())
+            .then(orders => {
+                const orderListTableBody = document.getElementById('orderList');
+                orderListTableBody.innerHTML = '';
+
+                orders.forEach(order => {
+                    const orderRow = document.createElement('tr');
+                    orderRow.innerHTML = `
+                                               <td>${order.orderId}</td>
+                                               <td>${order.orderDate}</td>
+                                               <td>${order.requiredDate}</td>
+                                               <td>${order.shippedDate}</td>
+                                               <td>${order.freight}</td>
+                                               <td>${order.isDeleted ? 'Yes' : 'No'}</td>
+                                               <td>${order.memberId}</td>
+                                               <td>
+                                                   <a href="/Orders/Edit/${order.orderId}">Edit</a> |
+                                                   <td><button onclick="deleteOrder(${order.orderId})">Delete</button></td>
+                                               </td>
+                                           `;
+                    orderListTableBody.appendChild(orderRow);
+                });
+            })
+            .catch(error => console.error('Error fetching orders:', error));
+    }
+
+    function deleteOrder(orderId) {
+
+        const isConfirmed = confirm('Are you sure you want to delete this order?');
+        if (isConfirmed) {
+            fetch(`https://localhost:7285/api/Orders/${orderId}`, {
+                method: 'DELETE',
+            })
+                .then(response => {
+                    if (response.ok) {
+                        getOrders();
+                    } else {
+                        console.error('Error deleting order:', response.statusText);
+                    }
+                })
+                .catch(error => console.error('Error deleting order:', error));
+        }
+    }
+
+</script>

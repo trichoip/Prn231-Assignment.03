@@ -1,7 +1,6 @@
 ﻿using AutoBogus;
 using EStore.Domain.Entities;
 using EStore.Infrastructure.Data;
-using EStore.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

@@ -1,7 +1,6 @@
-﻿using EStore.Domain.Entities;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 
-namespace EStore.Infrastructure.Identity
+namespace EStore.Domain.Entities
 {
     public class ApplicationUser : IdentityUser<int>
     {

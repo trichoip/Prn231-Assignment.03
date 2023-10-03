@@ -1,0 +1,130 @@
+﻿@page "{id:int}"
+@model EStore.WebClient.Pages.Orders.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Order</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form id="editForm">
+            <div class="form-group">
+                <label for="OrderDate" class="control-label">OrderDate</label>
+                <input type="datetime-local" id="OrderDate" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="RequiredDate" class="control-label">RequiredDate</label>
+                <input type="datetime-local" id="RequiredDate" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="ShippedDate" class="control-label">ShippedDate</label>
+                <input type="datetime-local" id="ShippedDate" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="Freight" class="control-label">Freight</label>
+                <input type="number" id="Freight" class="form-control" />
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" id="IsDeleted" /> IsDeleted
+                </label>
+            </div>
+            <div class="form-group">
+                <label for="MemberId" class="control-label">Member</label>
+                <select id="MemberId"></select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>
+
+<script>
+    const currentPath = window.location.pathname;
+    const orderIdMatch = currentPath.match(/\/Orders\/Edit\/(\d+)/);
+    const orderId = orderIdMatch ? parseInt(orderIdMatch[1], 10) : null;
+
+    if (orderId) {
+        Promise.all([
+            fetch(`https://localhost:7285/api/Orders/${orderId}`)
+                .then(response => {
+
+                    if (!response.ok) {
+                        alert(`order ${orderId} not found`);
+                        console.error('Error fetching data:', response.status);
+                        window.location.href = 'https://localhost:7084/Orders/Index';
+                    }
+
+                    return response.json();
+                }),
+
+            fetch('https://localhost:7285/api/ApplicationUsers').then(response => response.json())
+        ])
+            .then(([order, applicationUsers]) => {
+                document.getElementById('OrderDate').value = order.orderDate;
+                document.getElementById('RequiredDate').value = order.requiredDate;
+                document.getElementById('ShippedDate').value = order.shippedDate;
+                document.getElementById('Freight').value = order.freight;
+                document.getElementById('IsDeleted').checked = order.isDeleted;
+
+                const applicationUserIdSelect = document.getElementById('MemberId');
+                applicationUsers.forEach(applicationUser => {
+                    const option = document.createElement('option');
+                    option.value = applicationUser.id;
+                    option.textContent = applicationUser.email;
+                    applicationUserIdSelect.appendChild(option);
+                });
+
+                applicationUserIdSelect.value = order.memberId;
+            })
+            .catch(error => console.error('Error fetching data:', error));
+
+        document.getElementById('editForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const OrderDate = document.getElementById('OrderDate').value;
+            const RequiredDate = document.getElementById('RequiredDate').value;
+            const ShippedDate = document.getElementById('ShippedDate').value;
+            const Freight = document.getElementById('Freight').value;
+            const IsDeleted = document.getElementById('IsDeleted').checked;
+            const MemberId = document.getElementById('MemberId').value;
+
+            fetch(`https://localhost:7285/api/Orders/${orderId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    orderId: orderId,
+                    orderDate: OrderDate,
+                    requiredDate: RequiredDate,
+                    shippedDate: ShippedDate,
+                    freight: parseFloat(Freight),
+                    isDeleted: IsDeleted,
+                    memberId: parseInt(MemberId)
+                }),
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert(`order ${orderId} updated successfully.`);
+                        console.log('Order updated successfully.');
+                        window.location.href = 'https://localhost:7084/Orders/Index';
+                    } else {
+                        console.error('Error updating order:', response.statusText);
+                    }
+                })
+                .catch(error => console.error('Error updating order:', error));
+        });
+    } else {
+        console.error('Invalid orderId in the URL.');
+    }
+</script>

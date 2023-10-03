@@ -1,7 +1,7 @@
 ﻿using EStore.Application.Repositories;
 using EStore.Application.Services;
+using EStore.Domain.Entities;
 using EStore.Infrastructure.Data;
-using EStore.Infrastructure.Identity;
 using EStore.Infrastructure.Repositories;
 using EStore.Infrastructure.SeedData;
 using EStore.Infrastructure.Services;
@@ -22,14 +22,12 @@ public static class DependencyInjection
         services.AddServices();
         services.AddInitialiseDatabase();
         services.AddDefaultIdentity();
-        services.AddAuthentication();
     }
 
     public static void AddIdentity(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext(configuration);
         services.AddDefaultIdentity();
-        services.AddAuthentication();
     }
 
     public static void AddServices(this IServiceCollection services)
@@ -38,8 +36,8 @@ public static class DependencyInjection
             .AddScoped<ICategoryService, CategoryService>()
             .AddScoped<IOrderService, OrderService>()
             .AddScoped<IProductService, ProductService>()
-            .AddScoped<IOrderDetailService, OrderDetailService>()
-            .AddScoped<IEmailSender, EmailSenderService>();
+            .AddScoped<IApplicationUserService, ApplicationUserService>()
+            .AddScoped<IOrderDetailService, OrderDetailService>();
     }
 
     public static void AddRepositories(this IServiceCollection services)
@@ -53,12 +51,14 @@ public static class DependencyInjection
         if (configuration["DatabaseProvider"] == "MySql")
         {
             services.AddDbContext<ApplicationDbContext>(
-                options => options.UseMySQL(configuration.GetConnectionString("DefaultConnection")!));
+                options => options.UseMySQL(configuration.GetConnectionString("DefaultConnection")!)
+                .UseLazyLoadingProxies());
         }
         else
         {
             services.AddDbContext<ApplicationDbContext>(
-                options => options.UseInMemoryDatabase("Prn231As03DB"));
+                options => options.UseInMemoryDatabase("Prn231As03DB")
+                .UseLazyLoadingProxies());
         }
 
     }
@@ -71,6 +71,7 @@ public static class DependencyInjection
 
     public static void AddDefaultIdentity(this IServiceCollection services)
     {
+        services.AddScoped<IEmailSender, EmailSender>();
         services.AddDefaultIdentity<ApplicationUser>(options =>
         {
             options.SignIn.RequireConfirmedAccount = true;
@@ -83,60 +84,10 @@ public static class DependencyInjection
             options.Password.RequiredLength = 1;
             options.Password.RequiredUniqueChars = 0;
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromSeconds(30);
-            options.Lockout.MaxFailedAccessAttempts = 5;
+            options.Lockout.MaxFailedAccessAttempts = 2;
         })
           .AddRoles<IdentityRole<int>>()
           .AddEntityFrameworkStores<ApplicationDbContext>();
-    }
-
-    public static void AddAuthentication(this IServiceCollection services)
-    {
-
-        //services.AddAuthentication(options =>
-        //{
-        //    #region AddAuthentication
-
-        //    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        //    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-        //    #endregion
-        //})
-        //    .AddGoogle(googleOptions =>
-        //    {
-        //        #region AddGoogle
-
-        //        googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
-        //        googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
-
-        //        googleOptions.SaveTokens = true;
-
-        //        #endregion
-        //    })
-        //    .AddJwtBearer(options =>
-        //    {
-        //        #region AddJwtBearer
-
-        //        options.TokenValidationParameters = new TokenValidationParameters
-        //        {
-        //            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-        //                 builder.Configuration.GetSection("Authentication:Schemes:Bearer:SerectKey").Value!)),
-        //            ValidateIssuerSigningKey = true,
-
-        //            ClockSkew = TimeSpan.Zero,
-        //            ValidateLifetime = false,
-
-        //            ValidateIssuer = false,
-        //            ValidateAudience = false,
-
-        //        };
-
-        //        options.SaveToken = true;
-
-        //        options.RequireHttpsMetadata = false;
-        //        options.HandleEvents();
-
-        //        #endregion
-        //    });
     }
 
     public static async Task UseInitialiseDatabaseAsync(this WebApplication app)

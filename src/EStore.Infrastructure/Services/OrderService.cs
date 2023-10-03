@@ -3,8 +3,6 @@ using EStore.Application.DTOs;
 using EStore.Application.Repositories;
 using EStore.Application.Services;
 using EStore.Domain.Entities;
-using EStore.Infrastructure.Identity;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace EStore.Infrastructure.Services;
@@ -13,15 +11,12 @@ public class OrderService : IOrderService
 
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly UserManager<ApplicationUser> _userManager;
     public OrderService(
         IMapper mapper,
-        IUnitOfWork unitOfWork,
-        UserManager<ApplicationUser> userManager)
+        IUnitOfWork unitOfWork)
     {
         _mapper = mapper;
         _unitOfWork = unitOfWork;
-        _userManager = userManager;
     }
 
     public async Task<IList<OrderDto>> FindAllAsync()

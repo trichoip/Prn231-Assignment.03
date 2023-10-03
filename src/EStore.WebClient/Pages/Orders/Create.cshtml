@@ -1,0 +1,103 @@
+﻿@page
+@model EStore.WebClient.Pages.Orders.CreateModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Order</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form action="javascript:void(0);" method="POST" onsubmit="addOrder()">
+            <div class="form-group">
+                <label for="OrderDate" class="control-label">OrderDate</label>
+                <input type="datetime-local" id="OrderDate" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="RequiredDate" class="control-label">RequiredDate</label>
+                <input type="datetime-local" id="RequiredDate" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="ShippedDate" class="control-label">ShippedDate</label>
+                <input type="datetime-local" id="ShippedDate" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="Freight" class="control-label">Freight</label>
+                <input type="number" id="Freight" class="form-control" />
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" id="IsDeleted" /> IsDeleted
+                </label>
+            </div>
+            <div class="form-group">
+                <label for="MemberId" class="control-label">Member</label>
+                <select id="MemberId"></select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="Index">Back to List</a>
+</div>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', getApplicationUsers());
+
+    function getApplicationUsers() {
+        fetch('https://localhost:7285/api/ApplicationUsers')
+            .then(response => response.json())
+            .then(applicationUsers => {
+                const applicationUserSelect = document.getElementById('MemberId');
+                applicationUsers.forEach(applicationUser => {
+                    const option = document.createElement('option');
+                    option.value = applicationUser.id;
+                    option.text = applicationUser.email;
+                    applicationUserSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching applicationUsers:', error));
+    }
+
+    function addOrder() {
+
+        const OrderDate = document.getElementById('OrderDate').value;
+        const RequiredDate = document.getElementById('RequiredDate').value;
+        const ShippedDate = document.getElementById('ShippedDate').value;
+        const Freight = document.getElementById('Freight').value;
+        const IsDeleted = document.getElementById('IsDeleted').checked;
+        const MemberId = document.getElementById('MemberId').value;
+
+        const item = {
+            orderId: 0,
+            orderDate: OrderDate,
+            requiredDate: RequiredDate,
+            shippedDate: ShippedDate,
+            freight: parseFloat(Freight),
+            isDeleted: IsDeleted,
+            memberId: parseInt(MemberId)
+        };
+
+        fetch('https://localhost:7285/api/Orders', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(item)
+        })
+            .then(response => response.json())
+            .then(() => {
+                window.location.href = 'https://localhost:7084/Orders/Index';
+            })
+            .catch(error => console.error('Unable to add item.', error));
+    }
+</script>

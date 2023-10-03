@@ -1,6 +1,9 @@
-﻿namespace EStore.Application.DTOs;
+﻿using EStore.Application.Mappings;
+using EStore.Domain.Entities;
 
-public partial class CategoryDto
+namespace EStore.Application.DTOs;
+
+public partial class CategoryDto : IMapFrom<Category>
 {
     public int CategoryId { get; set; }
     public string CategoryName { get; set; }

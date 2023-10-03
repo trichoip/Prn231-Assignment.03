@@ -13,5 +13,4 @@ public partial class ProductDto : IMapFrom<Product>
     public bool IsDeleted { get; set; }
 
     public int? CategoryId { get; set; }
-    //public virtual CategoryDto? Category { get; set; }
 }

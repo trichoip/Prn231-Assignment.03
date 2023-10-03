@@ -5,7 +5,7 @@ using System.Net.Mail;
 namespace EStore.Infrastructure.Services
 {
 
-    public class EmailSenderService : IEmailSender
+    public class EmailSender : IEmailSender
     {
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {

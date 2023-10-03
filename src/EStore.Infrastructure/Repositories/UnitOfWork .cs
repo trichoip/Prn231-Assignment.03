@@ -13,6 +13,7 @@ public class UnitOfWork : IUnitOfWork
         OrderRepository = new OrderRepository(_dbContext);
         ProductRepository = new ProductRepository(_dbContext);
         OrderDetailRepository = new OrderDetailRepository(_dbContext);
+        ApplicationUserRepository = new ApplicationUserRepository(_dbContext);
     }
 
     public ICategoryRepository CategoryRepository { get; private set; }
@@ -22,6 +23,8 @@ public class UnitOfWork : IUnitOfWork
     public IProductRepository ProductRepository { get; private set; }
 
     public IOrderDetailRepository OrderDetailRepository { get; private set; }
+
+    public IApplicationUserRepository ApplicationUserRepository { get; private set; }
 
     public async Task CommitAsync() => await _dbContext.SaveChangesAsync();
     public IQueryable<T> Entities<T>() where T : class => _dbContext.Set<T>();

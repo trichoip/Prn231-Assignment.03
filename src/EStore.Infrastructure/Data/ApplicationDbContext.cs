@@ -1,5 +1,4 @@
 ﻿using EStore.Domain.Entities;
-using EStore.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

@@ -1,0 +1,103 @@
+﻿@page
+@model EStore.WebClient.Pages.Products.CreateModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Product</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form action="javascript:void(0);" method="POST" onsubmit="addProduct()">
+            <div class="form-group">
+                <label for="ProductName" class="control-label">ProductName</label>
+                <input type="text" id="ProductName" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="Weight" class="control-label">Weight</label>
+                <input type="text" id="Weight" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="UnitPrice" class="control-label">UnitPrice</label>
+                <input type="number" id="UnitPrice" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="UnitsInStock" class="control-label">UnitsInStock</label>
+                <input type="number" id="UnitsInStock" class="form-control" />
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" type="checkbox" id="IsDeleted" /> IsDeleted
+                </label>
+            </div>
+            <div class="form-group">
+                <label for="CategoryId" class="control-label">Category</label>
+                <select id="CategoryId"></select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="Index">Back to List</a>
+</div>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', getCategories());
+
+    function getCategories() {
+        fetch('https://localhost:7285/api/Categories')
+            .then(response => response.json())
+            .then(categories => {
+                const categorySelect = document.getElementById('CategoryId');
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.categoryId;
+                    option.text = category.categoryName;
+                    categorySelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching categories:', error));
+    }
+
+    function addProduct() {
+
+        const ProductName = document.getElementById('ProductName').value;
+        const Weight = document.getElementById('Weight').value;
+        const UnitPrice = document.getElementById('UnitPrice').value;
+        const UnitsInStock = document.getElementById('UnitsInStock').value;
+        const IsDeleted = document.getElementById('IsDeleted').checked;
+        const CategoryId = document.getElementById('CategoryId').value;
+
+        const item = {
+            productId: 0,
+            productName: ProductName,
+            weight: Weight,
+            unitPrice: parseFloat(UnitPrice),
+            unitsInStock: parseInt(UnitsInStock),
+            isDeleted: IsDeleted,
+            categoryId: parseInt(CategoryId)
+        };
+
+        fetch('https://localhost:7285/api/Products', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(item)
+        })
+            .then(response => response.json())
+            .then(() => {
+                window.location.href = 'https://localhost:7084/Products/Index';
+            })
+            .catch(error => console.error('Unable to add item.', error));
+    }
+</script>

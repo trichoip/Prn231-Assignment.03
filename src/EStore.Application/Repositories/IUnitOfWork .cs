@@ -5,6 +5,7 @@ public interface IUnitOfWork : IDisposable
     IOrderRepository OrderRepository { get; }
     IProductRepository ProductRepository { get; }
     IOrderDetailRepository OrderDetailRepository { get; }
+    IApplicationUserRepository ApplicationUserRepository { get; }
     IQueryable<T> Entities<T>() where T : class;
     Task CommitAsync();
 }

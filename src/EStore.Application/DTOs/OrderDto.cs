@@ -1,6 +1,9 @@
-﻿namespace EStore.Application.DTOs;
+﻿using EStore.Application.Mappings;
+using EStore.Domain.Entities;
 
-public partial class OrderDto
+namespace EStore.Application.DTOs;
+
+public partial class OrderDto : IMapFrom<Order>
 {
     public int OrderId { get; set; }
     public DateTime? OrderDate { get; set; }
@@ -10,5 +13,4 @@ public partial class OrderDto
     public bool IsDeleted { get; set; }
 
     public int? MemberId { get; set; }
-    public virtual ICollection<OrderDetailDto> OrderDetails { get; set; }
 }

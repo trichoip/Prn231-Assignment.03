@@ -19,6 +19,7 @@ if (app.Environment.IsDevelopment())
 }
 
 await app.UseInitialiseDatabaseAsync();
+app.UseCors(x => x.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
 
 app.UseHttpsRedirection();
 

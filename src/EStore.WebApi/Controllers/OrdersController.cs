@@ -6,23 +6,24 @@ namespace EStore.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ProductsController : ControllerBase
+public class OrdersController : ControllerBase
 {
-    private readonly IProductService _entityService;
 
-    public ProductsController(IProductService entityService)
+    private readonly IOrderService _entityService;
+
+    public OrdersController(IOrderService entityService)
     {
         _entityService = entityService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetProducts()
+    public async Task<IActionResult> GetOrders()
     {
         return Ok(await _entityService.FindAllAsync());
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetProduct(int id)
+    public async Task<IActionResult> GetOrder(int id)
     {
         var entity = await _entityService.FindByIdAsync(id);
         if (entity == null) return NotFound();
@@ -30,9 +31,9 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> PostProduct(ProductDto entityDto)
+    public async Task<IActionResult> PostOrder(OrderDto entityDto)
     {
-        if (entityDto.ProductId != 0) return BadRequest();
+        if (entityDto.OrderId != 0) return BadRequest();
         try
         {
             entityDto = await _entityService.CreateAsync(entityDto);
@@ -45,13 +46,13 @@ public class ProductsController : ControllerBase
         {
             return Problem(statusCode: 500, detail: ex.Message);
         }
-        return CreatedAtAction(nameof(GetProduct), new { id = entityDto.ProductId }, entityDto);
+        return CreatedAtAction(nameof(GetOrder), new { id = entityDto.OrderId }, entityDto);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutProduct(int id, ProductDto entityDto)
+    public async Task<IActionResult> PutOrder(int id, OrderDto entityDto)
     {
-        if (id != entityDto.ProductId) return BadRequest();
+        if (id != entityDto.OrderId) return BadRequest();
         try
         {
             await _entityService.UpdateAsync(entityDto);
@@ -69,7 +70,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteProduct(int id)
+    public async Task<IActionResult> DeleteOrder(int id)
     {
         try
         {

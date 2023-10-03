@@ -6,23 +6,23 @@ namespace EStore.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ProductsController : ControllerBase
+public class CategoriesController : ControllerBase
 {
-    private readonly IProductService _entityService;
+    private readonly ICategoryService _entityService;
 
-    public ProductsController(IProductService entityService)
+    public CategoriesController(ICategoryService entityService)
     {
         _entityService = entityService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetProducts()
+    public async Task<IActionResult> GetCategories()
     {
         return Ok(await _entityService.FindAllAsync());
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetProduct(int id)
+    public async Task<IActionResult> GetCategory(int id)
     {
         var entity = await _entityService.FindByIdAsync(id);
         if (entity == null) return NotFound();
@@ -30,9 +30,9 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> PostProduct(ProductDto entityDto)
+    public async Task<IActionResult> PostCategory(CategoryDto entityDto)
     {
-        if (entityDto.ProductId != 0) return BadRequest();
+        if (entityDto.CategoryId != 0) return BadRequest();
         try
         {
             entityDto = await _entityService.CreateAsync(entityDto);
@@ -45,13 +45,13 @@ public class ProductsController : ControllerBase
         {
             return Problem(statusCode: 500, detail: ex.Message);
         }
-        return CreatedAtAction(nameof(GetProduct), new { id = entityDto.ProductId }, entityDto);
+        return CreatedAtAction(nameof(GetCategory), new { id = entityDto.CategoryId }, entityDto);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutProduct(int id, ProductDto entityDto)
+    public async Task<IActionResult> PutCategory(int id, CategoryDto entityDto)
     {
-        if (id != entityDto.ProductId) return BadRequest();
+        if (id != entityDto.CategoryId) return BadRequest();
         try
         {
             await _entityService.UpdateAsync(entityDto);
@@ -69,7 +69,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteProduct(int id)
+    public async Task<IActionResult> DeleteCategory(int id)
     {
         try
         {
@@ -86,5 +86,4 @@ public class ProductsController : ControllerBase
 
         return NoContent();
     }
-
 }
